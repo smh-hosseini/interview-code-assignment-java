@@ -1,0 +1,120 @@
+openapi: 3.0.0
+info:
+  title: Fulfillment API
+  description: API for managing warehouse fulfillment associations
+  version: 1.0.0
+
+paths:
+  /fulfillment:
+    post:
+      summary: Create a warehouse fulfillment association
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FulfillmentRequest'
+      responses:
+        '201':
+          description: Fulfillment association created
+        '400':
+          description: Validation error (constraint violated)
+        '409':
+          description: Association already exists
+
+    get:
+      summary: Get fulfillment associations
+      parameters:
+        - name: storeId
+          in: query
+          schema:
+            type: string
+        - name: warehouseCode
+          in: query
+          schema:
+            type: string
+        - name: productId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of fulfillment associations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FulfillmentResponse'
+
+  /fulfillment/{warehouseCode}/{productId}/{storeId}:
+    delete:
+      summary: Remove a fulfillment association
+      parameters:
+        - name: warehouseCode
+          in: path
+          required: true
+          description: Business unit code of the warehouse
+          schema:
+            type: string
+            pattern: '^[A-Z]{3}\.[0-9]{3}$'
+            example: "MWH.001"
+        - name: productId
+          in: path
+          required: true
+          description: ID of the product
+          schema:
+            type: string
+            example: "1"
+        - name: storeId
+          in: path
+          required: true
+          description: ID of the store
+          schema:
+            type: string
+            example: "1"
+      responses:
+        '204':
+          description: Association removed
+        '404':
+          description: Association not found
+
+components:
+  schemas:
+    FulfillmentRequest:
+      type: object
+      required:
+        - warehouseBusinessUnitCode
+        - productId
+        - storeId
+      properties:
+        warehouseBusinessUnitCode:
+          type: string
+          pattern: '^[A-Z]{3}\.[0-9]{3}$'
+          example: "MWH.001"
+        productId:
+          type: string
+          example: "1"
+        storeId:
+          type: string
+          example: "1"
+
+    FulfillmentResponse:
+      type: object
+      properties:
+        warehouseBusinessUnitCode:
+          type: string
+          example: "MWH.001"
+        productId:
+          type: string
+          example: "1"
+        storeId:
+          type: string
+          example: "1"
+        priority:
+          type: integer
+          description: Priority (1 = primary, 2 = secondary)
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
